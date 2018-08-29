@@ -12,12 +12,16 @@ import (
 	"golang.org/x/net/html"
 )
 
+type Link struct {
+	URL string `xml:"href"`
+}
+
 // GetBody - Get body tag of a page
-func GetBody(doc *html.Node) ([]*html.Node, error) {
+func GetDownloadLinks(doc *html.Node) ([]*html.Node, error) {
 	b := make([]*html.Node, 0)
 	var f func(*html.Node)
 	f = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "li" {
+		if n.Type == html.ElementNode && n.Data == "link" {
 			b = append(b, n)
 		}
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
@@ -46,13 +50,16 @@ func renderNode(n []*html.Node) []string {
 func main() {
 	page := page.GetOfflinePage()
 	doc, _ := html.Parse(strings.NewReader(string(page)))
-	bn, err := GetBody(doc)
+	bn, err := GetDownloadLinks(doc)
 	if err != nil {
 		return
 	}
 	courseLists := renderNode(bn)
 
-	fmt.Println(courseLists)
+	for _, v := range courseLists {
+		fmt.Println(v)
+	}
+	fmt.Println("LEN is:", len(courseLists))
 
 }
 
@@ -62,11 +69,9 @@ func filterLists(allLists []string) []string {
 	courseLists := make([]string, 0)
 	for _, v := range allLists {
 		// check classname
-		if strings.Contains(v, "lessons-list__li") {
-			fmt.Println(v)
+		if strings.Contains(v, "contentUrl") {
 			courseLists = append(courseLists, v)
 		}
 	}
-	fmt.Println("LEN is:", len(courseLists))
 	return courseLists
 }
