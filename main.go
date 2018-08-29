@@ -56,10 +56,41 @@ func main() {
 	}
 	courseLists := renderNode(bn)
 
-	for _, v := range courseLists {
-		fmt.Println(v)
-	}
-	fmt.Println("LEN is:", len(courseLists))
+	courseLink := make(chan string)
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case link := <-courseLink:
+				fmt.Println(link)
+			case <-done:
+				return
+			}
+		}
+	}()
+	func() {
+		for _, v := range courseLists {
+
+			reader := strings.NewReader(v)
+			z := html.NewTokenizer(reader)
+			func() {
+				for {
+					tt := z.Next()
+					switch {
+					case tt == html.SelfClosingTagToken:
+						t := z.Token()
+						for _, a := range t.Attr {
+							if a.Key == "href" {
+								fmt.Println(a.Val)
+								return
+							}
+						}
+					}
+				}
+			}()
+		}
+		close(done)
+	}()
 
 }
 
