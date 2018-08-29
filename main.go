@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
+	"github.com/dima24kmagic/course_hunters/courses"
 	"github.com/dima24kmagic/course_hunters/page"
 
 	"golang.org/x/net/html"
@@ -58,6 +60,7 @@ func main() {
 
 	courseLink := make(chan string)
 	done := make(chan bool)
+
 	go func() {
 		for {
 			select {
@@ -68,34 +71,45 @@ func main() {
 			}
 		}
 	}()
-	func() {
-		for _, v := range courseLists {
 
-			reader := strings.NewReader(v)
-			z := html.NewTokenizer(reader)
-			func() {
-				for {
-					tt := z.Next()
-					switch {
-					case tt == html.SelfClosingTagToken:
-						t := z.Token()
-						for _, a := range t.Attr {
-							if a.Key == "href" {
-								fmt.Println(a.Val)
-								return
-							}
+	courses := getCoursesFromList(courseLists, done)
+	for _, v := range courses {
+		fmt.Println(v)
+	}
+}
+
+func getCoursesFromList(courseLists []string, done chan bool) []courses.Course {
+	allCourses := make([]courses.Course, 0)
+	for i, v := range courseLists {
+		newCourse := courses.Course{}
+		reader := strings.NewReader(v)
+		z := html.NewTokenizer(reader)
+		func() {
+			for {
+				tt := z.Next()
+				switch {
+				case tt == html.SelfClosingTagToken:
+					t := z.Token()
+					for _, a := range t.Attr {
+						if a.Key == "href" {
+							newCourse.CourseURL = a.Val
+							num := strconv.Itoa(i + 1)
+							newCourse.CourseName = "lesson " + num
+							newCourse.CourseNum = int64(i + 1)
+							allCourses = append(allCourses, newCourse)
+							fmt.Println(a.Val)
+							return
 						}
 					}
 				}
-			}()
-		}
-		close(done)
-	}()
-
+			}
+		}()
+	}
+	close(done)
+	return allCourses
 }
 
 // Filter li tags for those, that contain class .lessons-list__li
-
 func filterLists(allLists []string) []string {
 	courseLists := make([]string, 0)
 	for _, v := range allLists {
