@@ -10,7 +10,8 @@ import (
 	"golang.org/x/net/html"
 )
 
-func getBody(doc *html.Node) (*html.Node, error) {
+// GetBody - Get body tag of a page
+func GetBody(doc *html.Node) (*html.Node, error) {
 	var b *html.Node
 	var f func(*html.Node)
 	f = func(n *html.Node) {
@@ -37,12 +38,12 @@ func renderNode(n *html.Node) string {
 
 func main() {
 	doc, _ := html.Parse(strings.NewReader(htm))
-	bn, err := getBody(doc)
+	bn, err := GetBody(doc)
 	if err != nil {
 		return
 	}
 	body := renderNode(bn)
-	fmt.Println(body)
+	fmt.Println(body)	
 }
 
 const htm = `<!DOCTYPE html>

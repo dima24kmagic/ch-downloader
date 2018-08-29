@@ -2,89 +2,71 @@ package main
 
 import (
 	"bytes"
-	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
+	"strings"
 
 	"github.com/dima24kmagic/course_hunters/page"
+
+	"golang.org/x/net/html"
 )
 
-// DESCRIPTION:
-// This is source code for downloading courses from course_hunters and gzip them into archive
-
-// 1) Get the page of a course
-// 2) Traversal through html and get coursename + courseurl
-// 3) Download all courses with proper name
-// 3) For all courses create gzip archive
-
-// Course - struct for saving course
-type Course struct {
-	CourseName string
-	CourseURL  string
+// GetBody - Get body tag of a page
+func GetBody(doc *html.Node) ([]*html.Node, error) {
+	b := make([]*html.Node, 0)
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "li" {
+			b = append(b, n)
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			f(c)
+		}
+	}
+	f(doc)
+	if b != nil {
+		return b, nil
+	}
+	return nil, errors.New("Missing <body> in the node tree")
 }
 
-type Html struct {
-	Body Link `xml:"body"`
-}
-type Link struct {
-	Content string `xml:",innerxml"`
+func renderNode(n []*html.Node) []string {
+	nodes := make([]string, 0)
+	for _, node := range n {
+		var buf bytes.Buffer
+		w := io.Writer(&buf)
+		html.Render(w, node)
+		nodes = append(nodes, buf.String())
+	}
+	courses := filterLists(nodes)
+	return courses
 }
 
 func main() {
-	// get the html page
-	// filename := "Lesson1"
-	// filepath := "https://vs1.coursehunters.net/terminal-training-command-line-for-no-tech/lesson1.mp4"
-	// download(filename, filepath)
-	// courseHTML := getCourse("https://coursehunters.net/course/terminal-i-komandnaya-stroka-dlya-ne-tehnarey")
-	env := os.Getenv("TEST_ENV")
-	fmt.Println(env)
-	courseHTML := page.GetOfflinePage()
-	scrapeThroughCourse(courseHTML)
+	page := page.GetOfflinePage()
+	doc, _ := html.Parse(strings.NewReader(string(page)))
+	bn, err := GetBody(doc)
+	if err != nil {
+		return
+	}
+	courseLists := renderNode(bn)
+
+	fmt.Println(courseLists)
+
 }
 
-func scrapeThroughCourse(b []byte) {
-	fmt.Println(string(b))
-	h := Html{}
-	err := xml.NewDecoder(bytes.NewBuffer(b)).Decode(&h)
-	if err != nil {
-		log.Println("Error scraping page", err)
-	}
-	fmt.Println("HTML Response:", h)
-}
+// Filter li tags for those, that contain class .lessons-list__li
 
-func getCourse(courseLink string) []byte {
-	resp, err := http.Get(courseLink)
-	if err != nil {
-		log.Println("Can't get the course", err)
+func filterLists(allLists []string) []string {
+	courseLists := make([]string, 0)
+	for _, v := range allLists {
+		// check classname
+		if strings.Contains(v, "lessons-list__li") {
+			fmt.Println(v)
+			courseLists = append(courseLists, v)
+		}
 	}
-	defer resp.Body.Close()
-	rb, _ := ioutil.ReadAll(resp.Body)
-	return rb
-}
-
-func download(filename, filepath string) {
-
-	// Create the file
-	out, err := os.Create("./" + filename + ".mp4")
-	if err != nil {
-		log.Println("Cannot create file", err)
-	}
-	defer out.Close()
-
-	// Get the data
-	resp, err := http.Get(filepath)
-	if err != nil {
-		log.Println("Cannot get file", err)
-	}
-	defer resp.Body.Close()
-
-	// Write the body to the file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		log.Println("Cannot copy body of a response to a file", err)
-	}
+	fmt.Println("LEN is:", len(courseLists))
+	return courseLists
 }
