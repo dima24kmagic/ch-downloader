@@ -1,24 +1,25 @@
 package courses
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
+	"strings"
 )
 
 // Course - main struct for course info (№, name, url)
 type Course struct {
-	CourseNum  int64
+	CourseNum  int
 	CourseName string
 	CourseURL  string
 }
 
 // Download - download video from given courseVide type
-func Download(course Course) {
-	// Create the file	
-	filename := "./" + strconv.FormatInt(course.CourseNum, 64) + ") " + course.CourseName + ".mp4" // ex 1) Learning Terminal.mp4
+func (course *Course) Download() {
+	// Create the file
+	filename := "./" + course.CourseName + ".mp4" // ex 1) Learning Terminal.mp4
 	out, err := os.Create(filename)
 	if err != nil {
 		log.Println("Cannot create file", err)
@@ -29,6 +30,7 @@ func Download(course Course) {
 	resp, err := http.Get(course.CourseURL)
 	if err != nil {
 		log.Println("Cannot get file", err)
+		return
 	}
 	defer resp.Body.Close()
 
@@ -37,4 +39,24 @@ func Download(course Course) {
 	if err != nil {
 		log.Println("Cannot copy body of a response to a file", err)
 	}
+}
+
+func AskForDownload() []int {
+	var cNumsForDownload []int
+
+	fmt.Println("Download all courses (Y/N)")
+	var allCourses bool
+	var answer string
+	fmt.Scan(&answer)
+	allCourses = checkAnswer(answer)
+	fmt.Println(allCourses)
+
+	return cNumsForDownload
+}
+
+func checkAnswer(a string) bool {
+	if strings.ToLower(a) == "y" || strings.ToLower(a) == "yes" {
+		return true
+	}
+	return false
 }
