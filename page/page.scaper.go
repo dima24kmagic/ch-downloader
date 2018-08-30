@@ -3,7 +3,6 @@ package page
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"strconv"
@@ -80,7 +79,6 @@ func getCoursesFromList(courseLists []string) []courses.Course {
 							newCourse.CourseName = "lesson " + num
 							newCourse.CourseNum = i + 1
 							allCourses = append(allCourses, newCourse)
-							fmt.Println(a.Val)
 							return
 						}
 					}
