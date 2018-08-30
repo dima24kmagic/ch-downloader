@@ -11,6 +11,6 @@ func main() {
 	// courses.AskForDownload(cs)
 	for _, course := range cs {
 		course.Download()
-		break
 	}
+	select {}
 }
