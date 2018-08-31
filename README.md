@@ -11,8 +11,8 @@ basic usage (linux terminal system)
 2) type in terminal:
 ./ch-downloader
 3) You will see the prompt for course link:
-Paste link for a course \n
-4)Paste a link for course page ex. https://coursehunters.net/course/terminal-i-komandnaya-stroka-dlya-ne-tehnarey \n
+Paste link for a course   
+4)Paste a link for course page ex. https://coursehunters.net/course/terminal-i-komandnaya-stroka-dlya-ne-tehnarey     
 5)Next you will see prompt, download all coursesm or not
 *if you type y/yes (case unsensitive)
 tool gonna download all courses
@@ -21,7 +21,7 @@ tool gonna download all courses
 for downloading courses just type course № and separate them with plus(+) sign
 example:
 1-3 + 5 + 17 + 22-36
-(download from first to third, fifth, seventeen, from twenty two to thirty six) \n
+(download from first to third, fifth, seventeen, from twenty two to thirty six)  
 6) Wait for donload completion
 
 HINT: if you wanna quit programm immidiately - press (ctrl + c)
