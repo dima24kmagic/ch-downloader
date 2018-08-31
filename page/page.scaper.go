@@ -1,10 +1,15 @@
 package page
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -12,9 +17,31 @@ import (
 	"golang.org/x/net/html"
 )
 
+func getInput(prompt ...string) string {
+	for _, v := range prompt {
+		fmt.Println(v)
+	}
+	r := bufio.NewReader(os.Stdin)
+	line, err := r.ReadString('\n')
+	if err != nil {
+		log.Println("[ERROR] scanning", err)
+	}
+	return line
+}
+
 // GetAllCourses - get courses from http links
 func GetAllCourses() []courses.Course {
-	page := GetOfflinePage()
+	var link string
+	fmt.Println("Paste link for a course")
+	fmt.Scan(&link)
+	r, err := http.Get(link)
+	if err != nil {
+		log.Println("[ERROR] Get Request", err)
+	}
+	defer r.Body.Close()
+
+	page, err := ioutil.ReadAll(r.Body)
+
 	doc, _ := html.Parse(strings.NewReader(string(page)))
 	bn, err := getDownloadLinks(doc)
 	if err != nil {

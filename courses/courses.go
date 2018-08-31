@@ -110,7 +110,7 @@ func PrintDownloadPercent(done chan int64, path string, total int64) {
 func AskForDownload(courses []Course) []int {
 	var cNumsForDownload []int
 
-	answer := getInput("Download all courses (Y/N)")
+	answer := getInput("Download all " + strconv.Itoa(len(courses)) + " courses (Y/N)")
 	allCourses := checkAnswer(answer)
 	if allCourses {
 		for _, v := range courses {
