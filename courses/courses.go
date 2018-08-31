@@ -116,16 +116,18 @@ func AskForDownload(courses []Course) []int {
 		for _, v := range courses {
 			cNumsForDownload = append(cNumsForDownload, v.CourseNum)
 		}
+		fmt.Println("all courses gonna be downloaded")
+		return cNumsForDownload
 	} else {
 		a := getInput("What courses u wannna to download", "ex. --> 2 + 4-15 + 17-21")
 		args := parseInputForNumbers(a)
-		getCoursesPosition(args)
+		positions := getCoursesPosition(args)
+		fmt.Println("Courses with th-is positions gonna be downloaded: ", positions)
+		return positions
 	}
-
-	return cNumsForDownload
 }
 
-func getCoursesPosition(args []string) {
+func getCoursesPosition(args []string) []int {
 	positions := make([]int, 0)
 	for _, v := range args {
 		if strings.Contains(v, "-") {
@@ -138,6 +140,7 @@ func getCoursesPosition(args []string) {
 			positions = append(positions, n)
 		}
 	}
+	return positions
 }
 
 func parseRange(argRange string) []int {
@@ -155,7 +158,16 @@ func parseRange(argRange string) []int {
 			arg += string(v)
 		}
 	}
-	fmt.Println("RANGE:", args)
+
+	start, err := strconv.Atoi(args[0])
+	end, err := strconv.Atoi(args[1])
+
+	if err != nil {
+		log.Println("[ERROR] Conversion", err)
+	}
+	for i := start; i <= end; i++ {
+		ns = append(ns, i)
+	}
 	return ns
 }
 
