@@ -118,19 +118,73 @@ func AskForDownload(courses []Course) []int {
 		}
 	} else {
 		a := getInput("What courses u wannna to download", "ex. --> 2 + 4-15 + 17-21")
-		parseInputForNumbers(a)
+		args := parseInputForNumbers(a)
+		getCoursesPosition(args)
 	}
 
 	return cNumsForDownload
 }
 
-func parseInputForNumbers(input string) []string {
-	coursePositions := make([]string, 0)
-	for _, letter := range input {
-		// TODO: While not space - add this to a slice of parsed inputs, from there i can see, is that range or not
-		fmt.Println(string(letter))
+func getCoursesPosition(args []string) {
+	positions := make([]int, 0)
+	for _, v := range args {
+		if strings.Contains(v, "-") {
+			ns := parseRange(string(v))
+			for _, n := range ns {
+				positions = append(positions, n)
+			}
+		} else {
+			n, _ := strconv.Atoi(v)
+			positions = append(positions, n)
+		}
 	}
-	return coursePositions
+}
+
+func parseRange(argRange string) []int {
+	ns := make([]int, 0)
+	var arg string
+	args := make([]string, 0)
+	for i, v := range argRange {
+		if i+1 == len(argRange) {
+			arg += string(v)
+			args = append(args, arg)
+		} else if v == '-' {
+			args = append(args, arg)
+			arg = ""
+		} else {
+			arg += string(v)
+		}
+	}
+	fmt.Println("RANGE:", args)
+	return ns
+}
+
+func removeSpaceFromArgs(args []string) []string {
+	resp := make([]string, 0)
+	for _, arg := range args {
+		s := strings.Trim(arg, " ")
+		resp = append(resp, s)
+	}
+	return resp
+}
+
+// parseInputForNumbers - get array of arguments, (one or range *with dash*)
+func parseInputForNumbers(input string) []string {
+	allInputs := make([]string, 0)
+	var arg string
+	for i, letter := range input {
+		if i+1 == len(input) {
+			allInputs = append(allInputs, arg)
+		} else if letter != '+' { // for input delimetr is + sign
+			arg += string(letter)
+		} else {
+			allInputs = append(allInputs, arg)
+			arg = ""
+		}
+		// fmt.Println("[LETTER]", string(letter))
+	}
+	resp := removeSpaceFromArgs(allInputs)
+	return resp
 }
 
 func getInput(prompt ...string) string {
@@ -146,8 +200,12 @@ func getInput(prompt ...string) string {
 }
 
 func checkAnswer(a string) bool {
-	if strings.ToLower(a) == "y" || strings.ToLower(a) == "yes" {
+	if trimAndLow(a) == "y" || trimAndLow(a) == "yes" {
 		return true
 	}
 	return false
+}
+
+func trimAndLow(a string) string {
+	return strings.ToLower(strings.TrimRight(a, "\n"))
 }

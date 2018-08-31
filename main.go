@@ -8,9 +8,9 @@ import (
 func main() {
 	courses.CreateFolderForCourses()
 	cs := page.GetAllCourses()
-	// courses.AskForDownload(cs)
-	for _, course := range cs {
-		course.Download()
-	}
+	courses.AskForDownload(cs)
+	// for _, course := range cs {
+	// 	course.Download()
+	// }
 	select {}
 }
